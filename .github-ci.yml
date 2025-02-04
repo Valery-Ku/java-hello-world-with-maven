@@ -1,0 +1,67 @@
+name: CI Pipeline
+
+on:
+  push:
+    paths:
+      - 'pom.xml'
+      - '**/*.java'
+      - '**/*.xml'
+      - '**/*.properties'
+  pull_request:
+    paths:
+      - 'pom.xml'
+      - '**/*.java'
+      - '**/*.xml'
+      - '**/*.properties'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11.8.0_441"'
+
+      - name: Build with Maven
+        run: mvn clean install
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '1.8.0_441"'
+
+      - name: Run tests
+        run: mvn test
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '1.8.0_441"'
+
+      - name: Publish artifacts
+        run: mvn deploy
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts
+          path: target/1.jar 
